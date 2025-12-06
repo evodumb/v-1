@@ -1,16 +1,31 @@
-import { useState } from 'react';
-import { Calendar, Plus, Clock, Trash2, Mic, Bell } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calendar, Plus, Clock, Trash2, Mic, Bell, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
-import { TIMETABLE } from '../data/mockData';
+import { api } from '../api';
 import type { TimetableItem } from '../data/types';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 const Timetable = () => {
-    const [items, setItems] = useState<TimetableItem[]>(TIMETABLE);
+    const [items, setItems] = useState<TimetableItem[]>([]);
+    const [loading, setLoading] = useState(true);
     const [selectedDay, setSelectedDay] = useState('Monday');
     const [showAddModal, setShowAddModal] = useState(false);
     const [newItem, setNewItem] = useState({ title: '', time: '', type: 'Class' as const });
+
+    useEffect(() => {
+        const loadTimetable = async () => {
+            try {
+                const data = await api.getTimetable();
+                setItems(data);
+            } catch (error) {
+                console.error("Failed to load timetable", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadTimetable();
+    }, []);
 
     const filteredItems = items.filter(item => item.day === selectedDay);
 
@@ -43,62 +58,71 @@ const Timetable = () => {
                 </button>
             </div>
 
-            {/* Day Selector */}
-            <div className="flex gap-2 overflow-x-auto pb-4 mb-4 no-scrollbar">
-                {DAYS.map((day) => (
-                    <button
-                        key={day}
-                        onClick={() => setSelectedDay(day)}
-                        className={clsx(
-                            "px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors",
-                            selectedDay === day
-                                ? "bg-primary text-white shadow-md shadow-primary/30"
-                                : "bg-white text-text-secondary border border-gray-100"
-                        )}
-                    >
-                        {day}
-                    </button>
-                ))}
-            </div>
+            {loading ? (
+                <div className="flex items-center justify-center h-[50vh]">
+                    <Loader2 className="animate-spin text-primary" size={32} />
+                </div>
+            ) : (
+                <>
 
-            {/* Timetable List */}
-            <div className="space-y-4">
-                {filteredItems.length === 0 ? (
-                    <div className="text-center py-12 text-text-light">
-                        <Calendar size={48} className="mx-auto mb-4 opacity-50" />
-                        <p>No classes scheduled for {selectedDay}</p>
-                    </div>
-                ) : (
-                    filteredItems.map((item) => (
-                        <div key={item.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 animate-fade-in">
-                            <div className={clsx(
-                                "w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xs",
-                                item.type === 'Class' ? "bg-blue-500" : item.type === 'Quiz' ? "bg-red-500" : "bg-green-500"
-                            )}>
-                                {item.time}
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-bold text-text-primary">{item.title}</h3>
-                                <p className="text-xs text-text-secondary">{item.type}</p>
-                            </div>
+                    {/* Day Selector */}
+                    <div className="flex gap-2 overflow-x-auto pb-4 mb-4 no-scrollbar">
+                        {DAYS.map((day) => (
                             <button
-                                onClick={() => handleDelete(item.id)}
-                                className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                                key={day}
+                                onClick={() => setSelectedDay(day)}
+                                className={clsx(
+                                    "px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors",
+                                    selectedDay === day
+                                        ? "bg-primary text-white shadow-md shadow-primary/30"
+                                        : "bg-white text-text-secondary border border-gray-100"
+                                )}
                             >
-                                <Trash2 size={18} />
+                                {day}
                             </button>
-                        </div>
-                    ))
-                )}
-            </div>
+                        ))}
+                    </div>
 
-            {/* Add Button */}
-            <button
-                onClick={() => setShowAddModal(true)}
-                className="fixed bottom-24 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center hover:scale-110 transition-transform"
-            >
-                <Plus size={28} />
-            </button>
+                    {/* Timetable List */}
+                    <div className="space-y-4">
+                        {filteredItems.length === 0 ? (
+                            <div className="text-center py-12 text-text-light">
+                                <Calendar size={48} className="mx-auto mb-4 opacity-50" />
+                                <p>No classes scheduled for {selectedDay}</p>
+                            </div>
+                        ) : (
+                            filteredItems.map((item) => (
+                                <div key={item.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 animate-fade-in">
+                                    <div className={clsx(
+                                        "w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xs",
+                                        item.type === 'Class' ? "bg-blue-500" : item.type === 'Quiz' ? "bg-red-500" : "bg-green-500"
+                                    )}>
+                                        {item.time}
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-bold text-text-primary">{item.title}</h3>
+                                        <p className="text-xs text-text-secondary">{item.type}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => handleDelete(item.id)}
+                                        className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {/* Add Button */}
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        className="fixed bottom-24 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center hover:scale-110 transition-transform"
+                    >
+                        <Plus size={28} />
+                    </button>
+                </>
+            )}
 
             {/* Add Modal */}
             {showAddModal && (

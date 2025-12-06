@@ -59,7 +59,74 @@ export interface ProgressStats {
 }
 
 export interface User {
+    id?: number;
     name: string;
     language: 'en' | 'hi' | 'te' | 'ta' | 'kn';
     grade: string;
 }
+
+export interface Project {
+    id: string;
+    title: string;
+    description: string;
+    goal: string;
+    status: 'Open' | 'Closed' | 'Under Review';
+    budget_needed: number;
+    professor_id?: number;
+    creator_id: number;
+    creatorName?: string;
+    memberCount?: number;
+    created_at?: string;
+}
+
+export interface ProjectMember {
+    id: number;
+    project_id: string;
+    user_id: number;
+    name: string;
+    grade: string;
+    role: string;
+    status: 'pending' | 'approved' | 'rejected';
+}
+
+export interface ProjectTask {
+    id: number;
+    project_id: string;
+    title: string;
+    assigned_to?: number;
+    deadline?: string;
+    status: 'Pending' | 'In Progress' | 'Done';
+}
+
+export interface BudgetRequest {
+    id: number;
+    project_id: string;
+    title: string;
+    amount: number;
+    reason: string;
+    status: 'Pending' | 'Approved' | 'Rejected';
+    professor_note?: string;
+}
+
+export interface DiscussionPost {
+    id: number;
+    project_id: string;
+    user_id: number;
+    name: string;
+    message: string;
+    created_at: string;
+}
+
+export interface ProjectDetails extends Project {
+    members: ProjectMember[];
+    tasks: ProjectTask[];
+    budget: BudgetRequest[];
+}
+
+export interface Note {
+    id: number;
+    title: string;
+    content: string;
+    created_at: string;
+}
+

@@ -1,17 +1,34 @@
 import { useState, useEffect } from 'react';
-import { BrainCircuit, Timer, CheckCircle2, XCircle, RefreshCw, ChevronRight, Trophy } from 'lucide-react';
+import { BrainCircuit, Timer, CheckCircle2, XCircle, RefreshCw, ChevronRight, Trophy, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
-import { QUIZZES } from '../data/mockData';
+import { api } from '../api';
+import type { Quiz as QuizType } from '../data/types';
 
 const Quiz = () => {
+    const [quizzes, setQuizzes] = useState<QuizType[]>([]);
     const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [score, setScore] = useState(0);
     const [showResult, setShowResult] = useState(false);
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
     const [timeLeft, setTimeLeft] = useState(30);
+    const [loading, setLoading] = useState(true);
 
-    const quiz = activeQuiz ? QUIZZES.find(q => q.id === activeQuiz) : null;
+    useEffect(() => {
+        const loadQuizzes = async () => {
+            try {
+                const data = await api.getQuizzes();
+                setQuizzes(data);
+            } catch (error) {
+                console.error("Failed to load quizzes", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadQuizzes();
+    }, []);
+
+    const quiz = activeQuiz ? quizzes.find(q => q.id === activeQuiz) : null;
     const currentQuestion = quiz ? quiz.questions[currentQuestionIndex] : null;
 
     useEffect(() => {
@@ -57,13 +74,21 @@ const Quiz = () => {
         if (activeQuiz) handleStartQuiz(activeQuiz);
     };
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[50vh]">
+                <Loader2 className="animate-spin text-primary" size={32} />
+            </div>
+        );
+    }
+
     // 1. Quiz Selection Screen
     if (!activeQuiz) {
         return (
             <div className="p-6 pb-24">
                 <h2 className="text-2xl font-display font-bold text-text-primary mb-6">Select Quiz</h2>
                 <div className="space-y-4">
-                    {QUIZZES.map((q) => (
+                    {quizzes.map((q) => (
                         <button
                             key={q.id}
                             onClick={() => handleStartQuiz(q.id)}

@@ -12,6 +12,11 @@ import VoiceAssistant from './pages/VoiceAssistant';
 import Timetable from './pages/Timetable';
 import TeacherMode from './pages/TeacherMode';
 import Settings from './pages/Settings';
+import ProjectsHome from './pages/ProjectsHome';
+import CreateProject from './pages/CreateProject';
+import ProjectDetails from './pages/ProjectDetails';
+import NotebookHome from './pages/NotebookHome';
+import NoteEditor from './pages/NoteEditor';
 
 function App() {
   return (
@@ -26,6 +31,11 @@ function App() {
           <Route path="/classes/:subjectId" element={<Chapter />} />
           <Route path="/lesson/:lessonId" element={<LessonPlayer />} />
           <Route path="/quizzes" element={<Quiz />} />
+          <Route path="/projects" element={<ProjectsHome />} />
+          <Route path="/projects/create" element={<CreateProject />} />
+          <Route path="/projects/:id" element={<ProjectDetails />} />
+          <Route path="/notebook" element={<NotebookHome />} />
+          <Route path="/notebook/:id" element={<NoteEditor />} />
           <Route path="/progress" element={<Progress />} />
           <Route path="/voice-assistant" element={<VoiceAssistant />} />
           <Route path="/timetable" element={<Timetable />} />

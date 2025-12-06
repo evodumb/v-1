@@ -1,8 +1,38 @@
 import { BarChart3, Clock, BookOpen, Trophy, Lightbulb } from 'lucide-react';
-import { MOCK_STATS, SUBJECTS } from '../data/mockData';
+import { useEffect, useState } from 'react';
+import { api } from '../api';
+import type { ProgressStats, Subject } from '../data/types';
 
 const Progress = () => {
-    const stats = MOCK_STATS;
+    const [stats, setStats] = useState<ProgressStats | null>(null);
+    const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const [statsData, subjectsData] = await Promise.all([
+                    api.getStats(),
+                    api.getSubjects()
+                ]);
+                setStats(statsData);
+                setSubjects(subjectsData);
+            } catch (error) {
+                console.error("Failed to load progress data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (loading || !stats) {
+        return (
+            <div className="flex items-center justify-center h-[50vh]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-6 pb-24">
@@ -44,7 +74,7 @@ const Progress = () => {
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
                 <h3 className="font-bold text-lg text-text-primary mb-4">Subject Performance</h3>
                 <div className="space-y-4">
-                    {SUBJECTS.map((subject) => (
+                    {subjects.map((subject) => (
                         <div key={subject.id}>
                             <div className="flex justify-between text-sm mb-1">
                                 <span className="font-medium text-text-secondary">{subject.name}</span>
@@ -70,6 +100,34 @@ const Progress = () => {
                 <p className="text-white/90 leading-relaxed">
                     "You're doing great in Math! Try spending a bit more time on Science this week to balance your progress. Watch the 'Photosynthesis' lesson again."
                 </p>
+            </div>
+
+            {/* Projects Portfolio */}
+            <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="p-2 bg-pink-100 rounded-lg text-pink-600">
+                        <BookOpen size={20} />
+                    </div>
+                    <h3 className="font-bold text-lg text-text-primary">Project Portfolio</h3>
+                </div>
+
+                <div className="space-y-3">
+                    {/* Mock projects display since we don't have full auth filtering yet in this view */}
+                    <div className="bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center">
+                        <div>
+                            <h4 className="font-bold text-gray-800">Solar Water Pump</h4>
+                            <p className="text-xs text-gray-500">Role: Team Leader • Status: Open</p>
+                        </div>
+                        <span className="text-xs font-bold px-2 py-1 bg-green-100 text-green-700 rounded-full">Active</span>
+                    </div>
+                    <div className="bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center opacity-70">
+                        <div>
+                            <h4 className="font-bold text-gray-800">Waste Management</h4>
+                            <p className="text-xs text-gray-500">Role: Member • Status: Closed</p>
+                        </div>
+                        <span className="text-xs font-bold px-2 py-1 bg-gray-100 text-gray-600 rounded-full">Completed</span>
+                    </div>
+                </div>
             </div>
 
             {/* Badges */}

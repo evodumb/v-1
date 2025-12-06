@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Home, BookOpen, BrainCircuit, BarChart3, Settings as SettingsIcon, ChevronLeft } from 'lucide-react';
+import { Home, BookOpen, BrainCircuit, BarChart3, Settings as SettingsIcon, ChevronLeft, Briefcase, NotebookPen } from 'lucide-react';
 import clsx from 'clsx';
 
 const Layout = () => {
@@ -17,6 +17,8 @@ const Layout = () => {
     const navItems = [
         { icon: Home, label: 'Home', path: '/home' },
         { icon: BookOpen, label: 'Classes', path: '/classes' },
+        { icon: Briefcase, label: 'Projects', path: '/projects' },
+        { icon: NotebookPen, label: 'Notebook', path: '/notebook' },
         { icon: BrainCircuit, label: 'Quizzes', path: '/quizzes' },
         { icon: BarChart3, label: 'Progress', path: '/progress' },
         { icon: SettingsIcon, label: 'Settings', path: '/settings' },

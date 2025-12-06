@@ -1,18 +1,44 @@
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, ChevronRight } from 'lucide-react';
+import { BookOpen, ChevronRight, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
-import { SUBJECTS } from '../data/mockData';
 import * as Icons from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { api } from '../api';
+import type { Subject } from '../data/types';
 
 const Classes = () => {
     const navigate = useNavigate();
+    const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadSubjects = async () => {
+            try {
+                const data = await api.getSubjects();
+                setSubjects(data);
+            } catch (error) {
+                console.error("Failed to load subjects", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadSubjects();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[50vh]">
+                <Loader2 className="animate-spin text-primary" size={32} />
+            </div>
+        );
+    }
 
     return (
         <div className="p-6 pb-24">
             <h2 className="text-2xl font-display font-bold text-text-primary mb-6">Select Subject</h2>
 
             <div className="grid gap-4">
-                {SUBJECTS.map((subject) => {
+                {subjects.map((subject) => {
                     // Dynamically get icon component
                     const IconComponent = (Icons as any)[subject.icon] || BookOpen;
 

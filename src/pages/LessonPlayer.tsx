@@ -1,17 +1,41 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Volume2, Mic, FileText, Play, Pause } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Volume2, Mic, FileText, Play, Pause, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
-import { CHAPTERS } from '../data/mockData';
+import { api } from '../api';
+import type { Chapter } from '../data/types';
 
 const LessonPlayer = () => {
     const { lessonId } = useParams();
     const navigate = useNavigate();
     const [isPlaying, setIsPlaying] = useState(false);
     const [activeTab, setActiveTab] = useState<'video' | 'notes'>('video');
+    const [chapter, setChapter] = useState<Chapter | null>(null);
+    const [loading, setLoading] = useState(true);
 
-    // Mock finding chapter/lesson
-    const chapter = CHAPTERS.find(c => c.id === lessonId);
+    useEffect(() => {
+        const loadChapter = async () => {
+            if (!lessonId) return;
+            try {
+                // In our mock data structure, lessonId is the same as chapterId
+                const data = await api.getChapterById(lessonId);
+                setChapter(data);
+            } catch (error) {
+                console.error("Failed to load lesson", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadChapter();
+    }, [lessonId]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-background">
+                <Loader2 className="animate-spin text-primary" size={32} />
+            </div>
+        );
+    }
 
     if (!chapter) return <div>Lesson not found</div>;
 
@@ -80,14 +104,12 @@ const LessonPlayer = () => {
                         <div className="prose prose-sm max-w-none">
                             <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100 mb-4">
                                 <h3 className="font-bold text-yellow-800 mb-2 flex items-center gap-2">
-                                    <FileText size={16} /> Key Concepts
+                                    <FileText size={16} /> Lesson Notes
                                 </h3>
-                                <p className="text-yellow-900/80">{chapter.notes}</p>
+                                <p className="text-yellow-900/80 whitespace-pre-wrap font-medium leading-relaxed">
+                                    {chapter.notes}
+                                </p>
                             </div>
-                            <p>
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                            </p>
                         </div>
                     )}
 

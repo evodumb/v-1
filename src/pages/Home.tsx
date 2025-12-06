@@ -1,11 +1,32 @@
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, BrainCircuit, Mic, BarChart3, Settings, GraduationCap, PlayCircle, Quote } from 'lucide-react';
 import clsx from 'clsx';
-import { CHAPTERS } from '../data/mockData';
+import { useEffect, useState } from 'react';
+import { api } from '../api';
+import type { Chapter } from '../data/types';
 
 const Home = () => {
     const navigate = useNavigate();
-    const lastStudiedChapter = CHAPTERS[0]; // Mock last studied
+    const [lastStudiedChapter, setLastStudiedChapter] = useState<Chapter | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                // For now, just fetching a specific chapter to simulate "last studied"
+                // In a real app, this would come from the user's progress
+                const chapters = await api.getChapters('math');
+                if (chapters.length > 0) {
+                    setLastStudiedChapter(chapters[0]);
+                }
+            } catch (error) {
+                console.error("Failed to load home data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
 
     const MENU_ITEMS = [
         { title: 'Classes', icon: BookOpen, path: '/classes', color: 'bg-blue-500', shadow: 'shadow-blue-500/30' },
@@ -31,31 +52,45 @@ const Home = () => {
                     <h3 className="font-bold text-lg text-text-primary">Continue Learning</h3>
                     <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">Maths</span>
                 </div>
-                <div className="flex gap-4 items-center">
-                    <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
-                        <img
-                            src={lastStudiedChapter.thumbnail}
-                            alt={lastStudiedChapter.title}
-                            className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                            <PlayCircle className="text-white" size={24} />
+                {loading ? (
+                    <div className="animate-pulse flex gap-4">
+                        <div className="w-16 h-16 bg-gray-200 rounded-xl"></div>
+                        <div className="flex-1 space-y-2">
+                            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                         </div>
                     </div>
-                    <div className="flex-1">
-                        <h4 className="font-bold text-text-primary line-clamp-1">{lastStudiedChapter.title}</h4>
-                        <p className="text-xs text-text-secondary mb-2 line-clamp-1">{lastStudiedChapter.description}</p>
-                        <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                            <div className="bg-primary h-full w-3/4 rounded-full"></div>
+                ) : lastStudiedChapter ? (
+                    <div className="flex gap-4 items-center">
+                        <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                            <img
+                                src={lastStudiedChapter.thumbnail}
+                                alt={lastStudiedChapter.title}
+                                className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                <PlayCircle className="text-white" size={24} />
+                            </div>
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="font-bold text-text-primary line-clamp-1">{lastStudiedChapter.title}</h4>
+                            <p className="text-xs text-text-secondary mb-2 line-clamp-1">{lastStudiedChapter.description}</p>
+                            <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                                <div className="bg-primary h-full w-3/4 rounded-full"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <button
-                    onClick={() => navigate(`/lesson/${lastStudiedChapter.id}`)}
-                    className="w-full mt-3 py-2 text-sm font-bold text-primary bg-primary/5 rounded-lg hover:bg-primary/10 transition-colors"
-                >
-                    Resume Lesson
-                </button>
+                ) : (
+                    <p className="text-text-secondary">Start your first lesson!</p>
+                )}
+                {lastStudiedChapter && (
+                    <button
+                        onClick={() => navigate(`/lesson/${lastStudiedChapter.id}`)}
+                        className="w-full mt-3 py-2 text-sm font-bold text-primary bg-primary/5 rounded-lg hover:bg-primary/10 transition-colors"
+                    >
+                        Resume Lesson
+                    </button>
+                )}
             </div>
 
             {/* Main Menu Grid */}

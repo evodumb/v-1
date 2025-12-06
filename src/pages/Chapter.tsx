@@ -1,14 +1,44 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { PlayCircle, CheckCircle2, Circle, Mic } from 'lucide-react';
+import { PlayCircle, CheckCircle2, Circle, Mic, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
-import { SUBJECTS, CHAPTERS } from '../data/mockData';
+import { useEffect, useState } from 'react';
+import { api } from '../api';
+import type { Subject, Chapter as ChapterType } from '../data/types';
 
 const Chapter = () => {
     const { subjectId } = useParams();
     const navigate = useNavigate();
+    const [subject, setSubject] = useState<Subject | undefined>(undefined);
+    const [chapters, setChapters] = useState<ChapterType[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const subject = SUBJECTS.find(s => s.id === subjectId);
-    const chapters = CHAPTERS.filter(c => c.subjectId === subjectId);
+    useEffect(() => {
+        const loadData = async () => {
+            if (!subjectId) return;
+            try {
+                // Fetch subjects to find the current one (could be optimized with getSubjectById endpoint)
+                const subjects = await api.getSubjects();
+                const currentSubject = subjects.find(s => s.id === subjectId);
+                setSubject(currentSubject);
+
+                const chapterData = await api.getChapters(subjectId);
+                setChapters(chapterData);
+            } catch (error) {
+                console.error("Failed to load chapter data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, [subjectId]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[50vh]">
+                <Loader2 className="animate-spin text-primary" size={32} />
+            </div>
+        );
+    }
 
     if (!subject) return <div>Subject not found</div>;
 
